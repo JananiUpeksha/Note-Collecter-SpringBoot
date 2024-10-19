@@ -9,6 +9,7 @@ import lk.ijse.notecollectorspring.exception.DataPersistException;
 import lk.ijse.notecollectorspring.exception.UserNotFoundException;
 import lk.ijse.notecollectorspring.utill.Mapping;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -72,6 +73,13 @@ public class UserServiceImpl implements UserService{
             userEntity.setPassword(userDTO.getPassword());
             userEntity.setProfilePic(userDTO.getProfilePic());
         }
+    }
+
+    @Override
+    public UserDetailsService userDetailsService() {
+        return userName ->
+                userDAO.findByEmail(userName)
+                        .orElseThrow(()-> new UserNotFoundException("User Not Found"));
     }
 
 }

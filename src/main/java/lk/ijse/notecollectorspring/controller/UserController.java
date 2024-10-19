@@ -5,12 +5,14 @@ import lk.ijse.notecollectorspring.dto.UserStatus;
 import lk.ijse.notecollectorspring.dto.impl.UserDTO;
 import lk.ijse.notecollectorspring.exception.DataPersistException;
 import lk.ijse.notecollectorspring.exception.UserNotFoundException;
+import lk.ijse.notecollectorspring.secure.JWTAuthResponse;
 import lk.ijse.notecollectorspring.service.UserService;
 import lk.ijse.notecollectorspring.utill.AppUtill;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -24,12 +26,12 @@ public class UserController {
     @Autowired
     private UserService userService;
     /*PostMan Content Type - multipart/form-data; boundary=<calculated when request is sent> */
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE,produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = ("signup"),consumes = MediaType.MULTIPART_FORM_DATA_VALUE,produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> saveUser(@RequestPart("firstName") String firstName,/*ena request eke part ekak thiynwa firstname kiyla eywa me firstNameta assign karanna*/
                              @RequestPart("lastName")String lastName,
-                                   @RequestPart("email")String email,
-                                   @RequestPart("password")String password,
-                                   @RequestPart("profilePic") MultipartFile profilePic)
+                                                    @RequestPart("email")String email,
+                                                    @RequestPart("password")String password,
+                                                    @RequestPart("profilePic") MultipartFile profilePic)
     {
         //convert profile pic into Base64
         System.out.println("RAW pro pic " + profilePic);
@@ -47,6 +49,7 @@ public class UserController {
             buildUserDt0.setEmail(email);
             buildUserDt0.setPassword(password);
             buildUserDt0.setProfilePic(base64ProfilePic);
+            //Todo:change with auth user service
             userService.saveUser(buildUserDt0);
             return new ResponseEntity<>(HttpStatus.CREATED);
         } catch (DataPersistException e) {
@@ -93,6 +96,7 @@ public class UserController {
         }
     }
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasRole('ADMIN')")
     public List<UserDTO> getAllUsers(){
         return userService.getAllUsers();
     }
